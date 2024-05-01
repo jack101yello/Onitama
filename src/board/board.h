@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../piece/piece.h"
 #include "../card/card.h"
 #include <vector>
 #include <array>
@@ -9,10 +8,8 @@
 class Board {
     private:
     // Variables
-    std::vector<Piece> p1pieces;
-    std::vector<Piece> p2pieces;
-    std::vector<Card> p1cards;
-    std::vector<Card> p2cards;
+    std::pair<Card,Card> p1cards;
+    std::pair<Card,Card> p2cards;
     Card neutralcard;
     char **boardstate;
     std::vector<Card> deck;
@@ -36,4 +33,7 @@ class Board {
     // Methods
     void show();
     void updateboard(std::pair<int, int> start, std::pair<int, int> end);
+    std::pair<Card,Card> getP1Cards() const { return p1cards; }
+    std::pair<Card,Card> getP2cards() const { return p2cards; }
+    Card getNeutralCard() const { return neutralcard; }
 };

@@ -4,6 +4,7 @@
 
 // Start a new game
 Board::Board() {
+    std::cout << "//> Creating new board." << std::endl;
     // Initial board layout
     boardstate = new char*[5];
     boardstate[0] = new char[5] {'o', 'o', 'O', 'o', 'o'};
@@ -13,7 +14,7 @@ Board::Board() {
     boardstate[4] = new char[5] {'x', 'x', 'X', 'x', 'x'};
 
     generate_deck(); // Instantiate all of the cards in the deck
-    drawcards(); // This begins the game
+    drawcards(); // Draw the cards for the game
 }
 
 // Print the current board state
@@ -34,12 +35,13 @@ bool randsort(const Card &a, const Card &b) {
 
 // Draw cards from the deck to initiate the game
 void Board::drawcards() {
+    std::cout << "//> Shuffling the deck and dealing the cards." << std::endl;
     std::sort(deck.begin(), deck.end(), randsort);
 
-    p1cards.push_back(deck.at(0));
-    p2cards.push_back(deck.at(1));
-    p1cards.push_back(deck.at(2));
-    p2cards.push_back(deck.at(3));
+    p1cards.first = deck.at(0);
+    p2cards.first = deck.at(1);
+    p1cards.second = deck.at(2);
+    p2cards.second = deck.at(3);
     neutralcard = deck.at(4);
 }
 

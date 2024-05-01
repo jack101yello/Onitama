@@ -64,13 +64,14 @@ Brain::Brain(const Brain &parent) {
     }
 }
 
-void Brain::setCardStates(const Card &myfirst, const Card &mysecond, const Card &theirfirst, const Card &theirsecond) {
-    cardstates[myfirst.getIndex()] = true;
-    cardstates[mysecond.getIndex() + 16] = true;
-    cardstates[theirfirst.getIndex() + 32] = true;
-    cardstates[theirsecond.getIndex() + 48] = true;
-    MyCards.first = myfirst;
-    MyCards.second = mysecond;
+void Brain::setCardStates(const std::pair<Card,Card> &t_myCards, const std::pair<Card,Card> &theirCards, const Card &neutralCard) {
+    cardstates[t_myCards.first.getIndex()] = true;
+    cardstates[t_myCards.second.getIndex() + 16] = true;
+    cardstates[theirCards.first.getIndex() + 32] = true;
+    cardstates[theirCards.second.getIndex() + 48] = true;
+    cardstates[neutralCard.getIndex() + 64] = true;
+    MyCards.first = t_myCards.first;
+    MyCards.second = t_myCards.second;
 }
 
 /*
@@ -78,6 +79,7 @@ Returns the best legal move in the format:
 {Piece number, x change, y change}
 */
 std::vector<int> Brain::getMove() {
+    std::cout << "/// Finding optimal move..." << std::endl;
     int *input_layer = new int[input_size]; // A vector codifying the board state
 
     // Populate the input_layer vector
@@ -112,7 +114,7 @@ std::vector<int> Brain::getMove() {
     for(int i = 0; i < internal_layer_size; i++) {
         int count = 0;
         for(int j = 0; j < input_size; j++) {
-            count += input_layer[j] * transition_matrix1[i][j]; // Is this the correct index ordering? If segfault, no.
+            count += input_layer[j] * transition_matrix1[j][i]; // Is this the correct index ordering? If segfault, no.
         }
         internal_layer[i] = count;
     }
@@ -122,7 +124,7 @@ std::vector<int> Brain::getMove() {
     for(int i = 0; i < output_size; i++) {
         int count = 0;
         for(int j = 0; j < internal_layer_size; j++) {
-            count += internal_layer[j] * transition_matrix2[i][j];
+            count += internal_layer[j] * transition_matrix2[j][i];
         }
         output_layer[i] = count;
     }
@@ -147,6 +149,10 @@ std::vector<int> Brain::getMove() {
 
     // Convert the data to the proper output format
     std::vector<int> output = (std::vector<int>) {getPieceFromIndex(optimal_move), getMoveFromIndex(optimal_move).first, getMoveFromIndex(optimal_move).second};
+    
+    std::cout << "/// I want to move piece #" << output[0] << " " << output[1] <<
+        " spaces right and " << output[2] << " spaces up." << std::endl;
+
     return output;
 }
 
@@ -170,11 +176,15 @@ std::pair<int,int> Brain::getMoveFromIndex(int index) {
 }
 
 bool Brain::isLegalMove(int piecenumber, std::pair<int,int> move) {
+    std::cout << "/// can I move piece #" << piecenumber << " " << move.first <<
+        " spaces right and " << move.second << " spaces up?" << std::endl;
+
     int newx = mypiecepositions.at(piecenumber).first + move.first;
     int newy = mypiecepositions.at(piecenumber).second + move.second;
 
     // Check if the move is on the board
     if(newx < 0 || newx > 4 || newy < 0 || newy > 4) {
+        std::cout << "/// No, because it would leave the board." << std::endl;
         return false;
     }
 
@@ -185,6 +195,7 @@ bool Brain::isLegalMove(int piecenumber, std::pair<int,int> move) {
         }
 
         if(mypiecepositions.at(i).first == newx && mypiecepositions.at(i).second == newy) {
+            std::cout << "/// No, because it would intersect piece #" << i << std::endl;
             return false;
         }
     }
@@ -193,15 +204,17 @@ bool Brain::isLegalMove(int piecenumber, std::pair<int,int> move) {
     for(int i = 0; i < MyCards.first.getMoves().size(); i++) { // Check first card
         if(move.first == MyCards.first.getMoves().at(i).first &&
         move.second == MyCards.first.getMoves().at(i).second) {
+            std::cout << "/// Yes, because I have the " << MyCards.first.getName() << std::endl;
             return true; // We found that move on the first card!
         }
     }
     for(int i = 0; i < MyCards.second.getMoves().size(); i++) {
         if(move.first == MyCards.second.getMoves().at(i).first &&
         move.second == MyCards.second.getMoves().at(i).second) {
+            std::cout << "/// Yes, because I have the " << MyCards.second.getName() << std::endl;
             return true; // We found that move on the second card!
         }
     }
-
+    std::cout << "/// No, because I do not have any cards with that move." << std::endl;
     return false; // We don't have a card with that move
 }

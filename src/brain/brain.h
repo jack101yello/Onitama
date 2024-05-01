@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <utility>
 #include "../card/card.h"
@@ -36,6 +38,6 @@ class Brain {
     }
 
     // Methods
-    void setCardStates(const Card &myfirst, const Card &mysecond, const Card &theirfirst, const Card &theirsecond);
+    void setCardStates(const std::pair<Card,Card> &t_myCards, const std::pair<Card,Card> &theirCards, const Card &neutralCard);
     std::vector<int> getMove();
 };
