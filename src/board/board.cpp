@@ -31,17 +31,18 @@ void Board::show() {
     }
 }
 
-bool randsort(const Card &a, const Card &b) {
-    (void)a;
-    (void)b;
-    srand(time(NULL));
-    return rand() % 2 == 0;
+void Board::shuffle_deck() {
+    srand(time(0));
+    for(long unsigned int i = 0; i < deck.size(); i++) {
+        long unsigned int r = i + (rand() % (deck.size() - i));
+        iter_swap(deck.begin() + i, deck.begin() + r);
+    }
 }
 
 // Draw cards from the deck to initiate the game
 void Board::drawcards() {
     std::cout << "//> Shuffling the deck and dealing the cards." << std::endl;
-    std::sort(deck.begin(), deck.end(), randsort);
+    shuffle_deck();
 
     p1cards.first = deck.at(0);
     p2cards.first = deck.at(1);

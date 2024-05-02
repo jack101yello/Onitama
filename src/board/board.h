@@ -14,6 +14,7 @@ class Board {
     char **boardstate;
     std::vector<Card> deck;
     void generate_deck();
+    void shuffle_deck();
 
     // Methods
     void drawcards();
