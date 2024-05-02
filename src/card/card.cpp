@@ -12,7 +12,7 @@ void Board::generate_deck() {
     deck.push_back(Card("Horse", horse_moves, true, 2));
     
     std::vector<std::pair<int,int>> cobra_moves = {{-1,0},{1,1},{1,-1}};
-    deck.push_back(Card("Corba", cobra_moves, true, 3));
+    deck.push_back(Card("Cobra", cobra_moves, true, 3));
     
     std::vector<std::pair<int,int>> rabbit_moves = {{-1,-1},{1,1},{2,0}};
     deck.push_back(Card("Rabbit", rabbit_moves, false, 4));

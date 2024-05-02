@@ -34,6 +34,7 @@ Brain::Brain() {
 
 // This is for asexual reproduction of new brains
 Brain::Brain(const Brain &parent) {
+    (void)parent;
     cardstates = new bool[80];
     for(int i = 0; i < 80; i++) {
         cardstates[i] = false;
@@ -87,7 +88,7 @@ std::vector<int> Brain::getMove() {
     for(int i = 0; i < card_input_size; i++) { // Consider the card states
         input_layer[i] = (cardstates[i]) ? 1 : 0;
     }
-    for(int i = 0; i < mypiecepositions.size(); i++) { // Consider my pieces
+    for(long unsigned int i = 0; i < mypiecepositions.size(); i++) { // Consider my pieces
         /* Adding 1 here is in order to avoid the issues of pieces with position 0
         being removed on account of the input counting as a 0, causing it not to
         be included in the computation, when in reality it should be counted equally
@@ -100,7 +101,7 @@ std::vector<int> Brain::getMove() {
         input_layer[card_input_size + i*2] = mypiecepositions.at(i).first + 1;
         input_layer[card_input_size + i*2 + 1] = mypiecepositions.at(i).second + 1;
     }
-    for(int i = 0; i < theirpiecepositions.size(); i++) { // Consider their pieces
+    for(long unsigned int i = 0; i < theirpiecepositions.size(); i++) { // Consider their pieces
         input_layer[card_input_size + mypiecepositions.size() + i*2] = theirpiecepositions.at(i).first + 1;
         input_layer[card_input_size + mypiecepositions.size() + i*2 + 1] = theirpiecepositions.at(i).second + 1;
     }
@@ -189,8 +190,8 @@ bool Brain::isLegalMove(int piecenumber, std::pair<int,int> move) {
     }
 
     // Check if the move intersects a piece of ours
-    for(int i = 0; i < mypiecepositions.size(); i++) {
-        if(i == piecenumber) { // We don't care about intersecting ourselves
+    for(long unsigned int i = 0; i < mypiecepositions.size(); i++) {
+        if((int)i == piecenumber) { // We don't care about intersecting ourselves
             continue;
         }
 
@@ -201,14 +202,14 @@ bool Brain::isLegalMove(int piecenumber, std::pair<int,int> move) {
     }
 
     // Check if the move is on a card that we hold
-    for(int i = 0; i < MyCards.first.getMoves().size(); i++) { // Check first card
+    for(long unsigned int i = 0; i < MyCards.first.getMoves().size(); i++) { // Check first card
         if(move.first == MyCards.first.getMoves().at(i).first &&
         move.second == MyCards.first.getMoves().at(i).second) {
             std::cout << "/// Yes, because I have the " << MyCards.first.getName() << std::endl;
             return true; // We found that move on the first card!
         }
     }
-    for(int i = 0; i < MyCards.second.getMoves().size(); i++) {
+    for(long unsigned int i = 0; i < MyCards.second.getMoves().size(); i++) {
         if(move.first == MyCards.second.getMoves().at(i).first &&
         move.second == MyCards.second.getMoves().at(i).second) {
             std::cout << "/// Yes, because I have the " << MyCards.second.getName() << std::endl;

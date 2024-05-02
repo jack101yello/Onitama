@@ -14,7 +14,7 @@ class Card {
     public:
     Card() {};
     Card(std::string t_name, std::vector<std::pair<int,int>> t_moves, bool t_boxcolor, int t_index): 
-        name(t_name), moves(t_moves), boxcolor(t_boxcolor), index(t_index) {};
+        name(t_name), boxcolor(t_boxcolor), moves(t_moves), index(t_index) {};
     
     std::string getName() const { return name; }
     bool getBoxColor() const { return boxcolor; }

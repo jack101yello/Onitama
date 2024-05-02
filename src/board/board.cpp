@@ -1,6 +1,9 @@
 #include "board.h"
 #include <algorithm>
 #include <random>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 // Start a new game
 Board::Board() {
@@ -29,6 +32,8 @@ void Board::show() {
 }
 
 bool randsort(const Card &a, const Card &b) {
+    (void)a;
+    (void)b;
     srand(time(NULL));
     return rand() % 2 == 0;
 }
