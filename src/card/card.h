@@ -23,3 +23,5 @@ class Card {
 
     void getMove();
 };
+
+std::string CardNameFromIndex(int index);

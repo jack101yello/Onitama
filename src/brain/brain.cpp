@@ -1,4 +1,6 @@
 #include "brain.h"
+#include <chrono>
+#include <thread>
 
 // This is the default constructor, for the first generation
 Brain::Brain() {
@@ -65,22 +67,30 @@ Brain::Brain(const Brain &parent) {
     }
 }
 
-void Brain::setCardStates(const std::pair<Card,Card> &t_myCards, const std::pair<Card,Card> &theirCards, const Card &neutralCard) {
-    cardstates[t_myCards.first.getIndex()] = true;
-    cardstates[t_myCards.second.getIndex() + 16] = true;
-    cardstates[theirCards.first.getIndex() + 32] = true;
-    cardstates[theirCards.second.getIndex() + 48] = true;
-    cardstates[neutralCard.getIndex() + 64] = true;
+void Brain::setCardStates(const std::pair<Card*,Card*> t_myCards, const std::pair<Card*,Card*> theirCards, Card* neutralCard) {
+    cardstates[t_myCards.first->getIndex()] = true;
+    cardstates[t_myCards.second->getIndex() + 16] = true;
+    cardstates[theirCards.first->getIndex() + 32] = true;
+    cardstates[theirCards.second->getIndex() + 48] = true;
+    cardstates[neutralCard->getIndex() + 64] = true;
     MyCards.first = t_myCards.first;
     MyCards.second = t_myCards.second;
 }
 
 /*
 Returns the best legal move in the format:
-{Piece number, x change, y change}
+{Piece number, new x, new y}
 */
 std::vector<int> Brain::getMove() {
-    std::cout << "/// Finding optimal move..." << std::endl;
+    // Wait for time while "thinking"
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    // for(int i = 0; i < 5; i++) {
+    //     std::cout << mypiecepositions.at(i).first << "," << mypiecepositions.at(i).second << "\t";
+    // }
+    // std::cout << std::endl;
+
+    // std::cout << "/// Finding optimal move..." << std::endl;
     int *input_layer = new int[input_size]; // A vector codifying the board state
 
     // Populate the input_layer vector
@@ -112,8 +122,9 @@ std::vector<int> Brain::getMove() {
      likely suggest at least two. This should be looked into in future.
     */
     int *internal_layer = new int[internal_layer_size];
+    int count = 0;
     for(int i = 0; i < internal_layer_size; i++) {
-        int count = 0;
+        count = 0;
         for(int j = 0; j < input_size; j++) {
             count += input_layer[j] * transition_matrix1[j][i]; // Is this the correct index ordering? If segfault, no.
         }
@@ -123,7 +134,7 @@ std::vector<int> Brain::getMove() {
     // Compute the output layer
     int *output_layer = new int[output_size];
     for(int i = 0; i < output_size; i++) {
-        int count = 0;
+        count = 0;
         for(int j = 0; j < internal_layer_size; j++) {
             count += internal_layer[j] * transition_matrix2[j][i];
         }
@@ -131,15 +142,18 @@ std::vector<int> Brain::getMove() {
     }
 
     // Find the optimal legal move
-    int optimal_move = 0;
-    int max_weight = 0;
+    int optimal_move = -1; // The number of the currently best move
+    int max_weight = 0; // The weight of the currently best move
+    int cardIndex; // The number of the card containing the move
     for(int i = 0; i < output_size; i++) {
         if(output_layer[i] < max_weight) {
             continue;
         }
-        if(isLegalMove(getPieceFromIndex(i), getMoveFromIndex(i))) {
+        int legalMove = isLegalMove(getPieceFromIndex(i), getMoveFromIndex(i));
+        if(legalMove != -1) {
             optimal_move = i;
             max_weight = output_layer[i];
+            cardIndex = legalMove;
         }
     }
 
@@ -148,11 +162,26 @@ std::vector<int> Brain::getMove() {
     delete[] internal_layer;
     delete[] output_layer;
 
+    if(optimal_move == -1) { // There are no legal moves
+        // This should be properly accounted for later, but is staggeringly unlikely anyway
+        std::cout << "/// There are no legal moves!!" << std::endl;
+    }
+
     // Convert the data to the proper output format
-    std::vector<int> output = (std::vector<int>) {getPieceFromIndex(optimal_move), getMoveFromIndex(optimal_move).first, getMoveFromIndex(optimal_move).second};
+    // std::cout << "LOG::: " << mypiecepositions.at(getPieceFromIndex(optimal_move)).first+getMoveFromIndex(optimal_move).first << "." << mypiecepositions.at(getPieceFromIndex(optimal_move)).first+getMoveFromIndex(optimal_move).second << std::endl;
+    std::vector<int> output = (std::vector<int>) {getPieceFromIndex(optimal_move), mypiecepositions.at(getPieceFromIndex(optimal_move)).first+getMoveFromIndex(optimal_move).first, mypiecepositions.at(getPieceFromIndex(optimal_move)).second+getMoveFromIndex(optimal_move).second, cardIndex};
     
-    std::cout << "/// I want to move piece #" << output[0] << " " << output[1] <<
-        " spaces right and " << output[2] << " spaces up." << std::endl;
+    // std::cout << "/// I want to move piece #" << output[0] << " to (" << output[1] <<
+    //     ", " << output[2] << ") using the " << CardNameFromIndex(cardIndex) << std::endl;
+    // std::cout << "/// It is currently at (" << mypiecepositions.at(getPieceFromIndex(optimal_move)).first << ", " << mypiecepositions.at(getPieceFromIndex(optimal_move)).second << std::endl;
+
+
+    // for(int i = 0; i < 5; i++) {
+    //     std::cout << mypiecepositions.at(i).first << "," << mypiecepositions.at(i).second << "\t";
+    // }
+    // std::cout << std::endl;
+
+    // return (std::vector<int>) {0, mypiecepositions.at(0).first, mypiecepositions.at(0).second+1, -1}; // Suicide strat
 
     return output;
 }
@@ -176,17 +205,25 @@ std::pair<int,int> Brain::getMoveFromIndex(int index) {
     }
 }
 
-bool Brain::isLegalMove(int piecenumber, std::pair<int,int> move) {
-    std::cout << "/// can I move piece #" << piecenumber << " " << move.first <<
-        " spaces right and " << move.second << " spaces up?" << std::endl;
+/* Return the cardnumber of the card containing the move if legal, or -1 otherwise
+*/
+int Brain::isLegalMove(int piecenumber, std::pair<int,int> move) {
+    // std::cout << "/// can I move piece #" << piecenumber << " " << move.first <<
+    //     " spaces right and " << move.second << " spaces up?" << std::endl;
+
+    // Check that the piece hasn't been captured
+    if(mypiecepositions.at(piecenumber).first == -1) {
+        // std::cout << "/// No, because this piece has been captured." << std::endl;
+        return -1;
+    }
 
     int newx = mypiecepositions.at(piecenumber).first + move.first;
     int newy = mypiecepositions.at(piecenumber).second + move.second;
 
     // Check if the move is on the board
     if(newx < 0 || newx > 4 || newy < 0 || newy > 4) {
-        std::cout << "/// No, because it would leave the board." << std::endl;
-        return false;
+        // std::cout << "/// No, because it would leave the board." << std::endl;
+        return -1;
     }
 
     // Check if the move intersects a piece of ours
@@ -196,26 +233,47 @@ bool Brain::isLegalMove(int piecenumber, std::pair<int,int> move) {
         }
 
         if(mypiecepositions.at(i).first == newx && mypiecepositions.at(i).second == newy) {
-            std::cout << "/// No, because it would intersect piece #" << i << std::endl;
-            return false;
+            // std::cout << "/// No, because it would intersect piece #" << i << std::endl;
+            return -1;
         }
     }
 
     // Check if the move is on a card that we hold
-    for(long unsigned int i = 0; i < MyCards.first.getMoves().size(); i++) { // Check first card
-        if(move.first == MyCards.first.getMoves().at(i).first &&
-        move.second == MyCards.first.getMoves().at(i).second) {
-            std::cout << "/// Yes, because I have the " << MyCards.first.getName() << std::endl;
-            return true; // We found that move on the first card!
+    for(long unsigned int i = 0; i < MyCards.first->getMoves().size(); i++) { // Check first card
+        if(move.first == MyCards.first->getMoves().at(i).first &&
+        move.second == MyCards.first->getMoves().at(i).second) {
+            // std::cout << "/// Yes, because I have the " << MyCards.first->getName() << std::endl;
+            return MyCards.first->getIndex(); // We found that move on the first card!
         }
     }
-    for(long unsigned int i = 0; i < MyCards.second.getMoves().size(); i++) {
-        if(move.first == MyCards.second.getMoves().at(i).first &&
-        move.second == MyCards.second.getMoves().at(i).second) {
-            std::cout << "/// Yes, because I have the " << MyCards.second.getName() << std::endl;
-            return true; // We found that move on the second card!
+    for(long unsigned int i = 0; i < MyCards.second->getMoves().size(); i++) {
+        if(move.first == MyCards.second->getMoves().at(i).first &&
+        move.second == MyCards.second->getMoves().at(i).second) {
+            // std::cout << "/// Yes, because I have the " << MyCards.second->getName() << std::endl;
+            return MyCards.second->getIndex(); // We found that move on the second card!
         }
     }
-    std::cout << "/// No, because I do not have any cards with that move." << std::endl;
-    return false; // We don't have a card with that move
+    // std::cout << "/// No, because I do not have any cards with that move." << std::endl;
+    return -1; // We don't have a card with that move
+}
+
+void Brain::move(bool side, int piece, std::pair<int,int> move) {
+    if(side) { // Our piece is moving
+        mypiecepositions.at(piece).first += move.first;
+        mypiecepositions.at(piece).second += move.second;
+    }
+    else { // Their piece is moving
+        theirpiecepositions.at(piece).first += move.first;
+        theirpiecepositions.at(piece).second += move.second;
+    }
+}
+
+void Brain::setCards(Card* card1, Card* card2) {
+    MyCards = (std::pair<Card*,Card*>) {card1, card2};
+}
+
+void Brain::kill_piece(int piece) {
+    // This is the convention that we choose to denote a captured piece.
+    mypiecepositions.at(piece).first = -1;
+    mypiecepositions.at(piece).second = -1;
 }

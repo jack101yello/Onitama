@@ -6,7 +6,10 @@
 #include <stdlib.h>
 
 // Start a new game
-Board::Board() {
+Board::Board(Brain *t_player1, Brain *t_player2) {
+    player1 = t_player1;
+    player2 = t_player2;
+
     std::cout << "//> Creating new board." << std::endl;
     // Initial board layout
     boardstate = new char*[5];
@@ -22,6 +25,7 @@ Board::Board() {
 
 // Print the current board state
 void Board::show() {
+    std::cout << "-----------" << std::endl;
     for(int i = 0; i < 5; i++) {
         std::cout << "|";
         for(int j = 0; j < 5; j++) {
@@ -29,6 +33,7 @@ void Board::show() {
         }
         std::cout << std::endl;
     }
+    std::cout << "-----------" << std::endl;
 }
 
 void Board::shuffle_deck() {
@@ -52,7 +57,16 @@ void Board::drawcards() {
 }
 
 // Move a piece from start to end
-void Board::updateboard(std::pair<int,int> start, std::pair<int,int> end) {
-    boardstate[end.first][end.second] = boardstate[start.first][start.second];
-    boardstate[start.first][start.second] = ' ';
+void Board::updateboard() {
+    for(int i = 0; i < 5; i++) {
+        for(int j = 0; j < 5; j++) {
+            boardstate[i][j] = ' ';
+        }
+    }
+    boardstate[4 - player1->getPiecePosition(0).second][4 - player1->getPiecePosition(0).first] = 'X';
+    boardstate[player2->getPiecePosition(0).second][player2->getPiecePosition(0).first] = 'O';
+    for(int i = 1; i < 5; i++) {
+        boardstate[4 - player1->getPiecePosition(i).second][4 - player1->getPiecePosition(i).first] = 'x';
+        boardstate[player2->getPiecePosition(i).second][player2->getPiecePosition(i).first] = 'o';
+    }
 }

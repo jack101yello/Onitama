@@ -1,23 +1,18 @@
 #include <iostream>
-#include "board/board.h"
+#include "game/game.h"
 #include "brain/brain.h"
 
 int main() {
 
-    Board board;
-    Brain opponent;
+    Brain *Jack = new Brain();
+    Brain *Nate = new Brain();
 
-    opponent.setCardStates(board.getP1Cards(), board.getP2cards(), board.getNeutralCard());
+    Game game(Jack, Nate);
 
-    std::cout << "You have: " << board.getP2cards().first.getName() << " and " << 
-        board.getP2cards().second.getName() << std::endl;
-    std::cout << "The computer has: " << board.getP1Cards().first.getName() << " and " <<
-        board.getP1Cards().second.getName() << std::endl;
-    std::cout << "The neutral card is: " << board.getNeutralCard().getName() << std::endl;
+    game.playGame();
 
-    std::cout << "Your opponent will now make a move:" << std::endl;
-
-    opponent.getMove();
+    delete Jack;
+    delete Nate;
 
     return 0;
 }
