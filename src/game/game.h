@@ -18,7 +18,11 @@ class Game {
     public:
     // Constructors and Destructor
     Game(Brain *t_player1, Brain *t_player2);
-    ~Game() { delete board; }
+    ~Game() {
+        delete board;
+        player1->reset();
+        player2->reset();
+    }
 
     // Methods
     bool playGame(); // Return winner (true for 1, false for 2)
