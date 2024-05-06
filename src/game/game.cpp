@@ -40,7 +40,6 @@ bool Game::playRound(bool turn, int turn_number) {
 
     currentplayer->move(true, move_formatted.at(0), delta);
     otherplayer->move(false, move_formatted.at(0), delta);
-    board->updateboard();
     
     // Update cards
     // We need to find which card was played
@@ -78,6 +77,7 @@ bool Game::playRound(bool turn, int turn_number) {
         }
     }
 
+    board->updateboard();
     board->show();
 
     std::cout << "Player 1 says that the pieces have positions:" << std::endl;
@@ -99,7 +99,7 @@ bool Game::playRound(bool turn, int turn_number) {
         }
         return turn; // You can only win on your own turn, so we know who won if there's a winning position
     }
-    else if(turn_number >= 20) {
+    else if(turn_number >= maximum_turns) {
         return true; // The game has lasted too long, so we're just calling a winner to end it, preventing an infinite game. Inelegant, but necessary.
     }
     else {

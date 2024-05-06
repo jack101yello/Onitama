@@ -11,6 +11,8 @@ class Game {
     Brain *player1;
     Brain *player2;
 
+    const int maximum_turns = 40;
+
     // Methods
     bool checkGameOver();
     bool playRound(bool turn, int turn_number); // Constituent for playGame()
