@@ -3,7 +3,8 @@
 #include <thread>
 
 // This is the default constructor, for the first generation
-Brain::Brain() {
+Brain::Brain(std::string t_name) {
+    name = t_name;
     cardstates = new bool[80];
     for(int i = 0; i < 80; i++) {
         cardstates[i] = false;
@@ -12,31 +13,34 @@ Brain::Brain() {
     theirpiecepositions = {{2, 4}, {0, 4}, {1, 4}, {3, 4}, {4, 4}};
 
     // Create the transition matrices
-    transition_matrix1 = new int*[input_size];
+    transition_matrix1 = new float*[input_size];
     for(int i = 0; i < input_size; i++) {
-        transition_matrix1[i] = new int[internal_layer_size];
+        transition_matrix1[i] = new float[internal_layer_size];
     }
-    transition_matrix2 = new int*[150];
+    transition_matrix2 = new float*[internal_layer_size];
     for(int i = 0; i < internal_layer_size; i++) {
-        transition_matrix2[i] = new int[output_size];
+        transition_matrix2[i] = new float[output_size];
     }
 
     // Populate the transition matrices
+    srand(time(NULL));
     for(int i = 0; i < input_size; i++) {
         for(int j = 0; j < internal_layer_size; j++) {
-            transition_matrix1[i][j] = 0.5; // In future, make random
+            transition_matrix1[i][j] = (float) rand()/RAND_MAX;
         }
     }
     for(int i = 0; i < internal_layer_size; i++) {
         for(int j = 0; j < output_size; j++) {
-            transition_matrix2[i][j] = 0.5; // In future, make random
+            transition_matrix2[i][j] = (float) rand()/RAND_MAX;
         }
     }
+
+    std::cout << "New brain created from nothing named " << name << "." << std::endl;
 }
 
-// This is for asexual reproduction of new brains
-Brain::Brain(const Brain &parent) {
-    (void)parent;
+// This is for asexual reproduction of new brains from parents
+Brain::Brain(std::string t_name, const Brain &parent) {
+    name = t_name;
     cardstates = new bool[80];
     for(int i = 0; i < 80; i++) {
         cardstates[i] = false;
@@ -45,26 +49,31 @@ Brain::Brain(const Brain &parent) {
     theirpiecepositions = {{2, 4}, {0, 4}, {1, 4}, {3, 4}, {4, 4}};
 
     // Create the transition matrices
-    transition_matrix1 = new int*[input_size];
+    transition_matrix1 = new float*[input_size];
     for(int i = 0; i < input_size; i++) {
-        transition_matrix1[i] = new int[internal_layer_size];
+        transition_matrix1[i] = new float[internal_layer_size];
     }
-    transition_matrix2 = new int*[150];
+    transition_matrix2 = new float*[internal_layer_size];
     for(int i = 0; i < internal_layer_size; i++) {
-        transition_matrix2[i] = new int[output_size];
+        transition_matrix2[i] = new float[output_size];
     }
 
+    srand(time(NULL));
     // Populate the transition matrices
     for(int i = 0; i < input_size; i++) {
         for(int j = 0; j < internal_layer_size; j++) {
-            transition_matrix1[i][j] = 0.5; // In future, get from parent
+            transition_matrix1[i][j] = parent.TransitionMatrixElement(1, i, j);
+            transition_matrix1[i][j] += ((float) rand()/RAND_MAX) * mutation_factor; // Mutate so generations can change
         }
     }
     for(int i = 0; i < internal_layer_size; i++) {
         for(int j = 0; j < output_size; j++) {
-            transition_matrix2[i][j] = 0.5; // In future, get from parent
+            transition_matrix2[i][j] = parent.TransitionMatrixElement(2, i, j);
+            transition_matrix2[i][j] += ((float) rand()/RAND_MAX) * mutation_factor; // Mutation
         }
     }
+
+    std::cout << "New brain created from parent " << parent.getName() << " named " << name << "." << std::endl;
 }
 
 void Brain::setCardStates(const std::pair<Card*,Card*> t_myCards, const std::pair<Card*,Card*> theirCards, Card* neutralCard) {
@@ -83,7 +92,7 @@ Returns the best legal move in the format:
 */
 std::vector<int> Brain::getMove() {
     // Wait for time while "thinking"
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     // for(int i = 0; i < 5; i++) {
     //     std::cout << mypiecepositions.at(i).first << "," << mypiecepositions.at(i).second << "\t";
@@ -276,4 +285,38 @@ void Brain::kill_piece(int piece) {
     // This is the convention that we choose to denote a captured piece.
     mypiecepositions.at(piece).first = -1;
     mypiecepositions.at(piece).second = -1;
+}
+
+void Brain::show() {
+    std::cout << name << " Diagnostics:" << std::endl;
+    std::cout << "\tTransition Matrix 1:" << std::endl;
+    for(int i = 0; i < 10; i++) {
+        for(int j = 0; j < 10; j++) {
+            std::cout << transition_matrix1[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "\tTransition Matrix 2:" << std::endl;
+    for(int i = 0; i < 10; i++) {
+        for(int j = 0; j < 10; j++) {
+            std::cout << transition_matrix2[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+float Brain::TransitionMatrixElement(int index, int x, int y) const {
+    switch(index) {
+        case 1: return transition_matrix1[x][y];
+        case 2: return transition_matrix2[x][y];
+        default: return 0; // This should not occur
+    }
+}
+
+void Brain::reset() {
+    for(int i = 0; i < 80; i++) {
+        cardstates[i] = false;
+    }
+    mypiecepositions = {{2, 0}, {0, 0}, {1, 0}, {3, 0}, {4, 0}};
+    theirpiecepositions = {{2, 4}, {0, 4}, {1, 4}, {3, 4}, {4, 4}};
 }

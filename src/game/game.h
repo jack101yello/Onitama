@@ -13,13 +13,13 @@ class Game {
 
     // Methods
     bool checkGameOver();
-    bool playRound(bool turn); // Constituent for playGame()
+    bool playRound(bool turn, int turn_number); // Constituent for playGame()
 
     public:
     // Constructors and Destructor
-    Game(Brain *t_player1, Brain *t_player2): player1(t_player1), player2(t_player2) { board = new Board(t_player1, t_player2); }
+    Game(Brain *t_player1, Brain *t_player2);
     ~Game() { delete board; }
-    bool playGame(); // Return winner (true for 1, false for 2)
 
     // Methods
+    bool playGame(); // Return winner (true for 1, false for 2)
 };

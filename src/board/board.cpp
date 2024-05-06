@@ -66,7 +66,11 @@ void Board::updateboard() {
     boardstate[4 - player1->getPiecePosition(0).second][4 - player1->getPiecePosition(0).first] = 'X';
     boardstate[player2->getPiecePosition(0).second][player2->getPiecePosition(0).first] = 'O';
     for(int i = 1; i < 5; i++) {
-        boardstate[4 - player1->getPiecePosition(i).second][4 - player1->getPiecePosition(i).first] = 'x';
-        boardstate[player2->getPiecePosition(i).second][player2->getPiecePosition(i).first] = 'o';
+        if(player1->getPiecePosition(i).first != -1) { // Ensure that the piece is not dead.
+            boardstate[4 - player1->getPiecePosition(i).second][4 - player1->getPiecePosition(i).first] = 'x';
+        }
+        if(player2->getPiecePosition(i).first != -1) {
+            boardstate[player2->getPiecePosition(i).second][player2->getPiecePosition(i).first] = 'o';
+        }
     }
 }

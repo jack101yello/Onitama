@@ -1,6 +1,13 @@
 #include "game.h"
 #include <vector>
 
+Game::Game(Brain *t_player1, Brain *t_player2) {
+    player1 = t_player1;
+    player2 = t_player2;
+    board = new Board(t_player1, t_player2);
+    std::cout << "New game started between " << player1->getName() << " and " << player2->getName() << "." << std::endl;
+}
+
 bool Game::playGame() {
     board->show();
 
@@ -9,10 +16,10 @@ bool Game::playGame() {
     player2->setCardStates(board->getP2cards(), board->getP1Cards(), board->getNeutralCard());
 
     // return playRound(board->getNeutralCard()->getBoxColor());
-    return playRound(true);
+    return playRound(true, 1);
 }
 
-bool Game::playRound(bool turn) {
+bool Game::playRound(bool turn, int turn_number) {
     // This redefinition prevents us from making too many if statements
     Brain *currentplayer;
     Brain *otherplayer;
@@ -73,24 +80,34 @@ bool Game::playRound(bool turn) {
 
     board->show();
 
-    // std::cout << "Player 1 says that the pieces have positions:" << std::endl;
-    // for(int i = 0; i < 5; i++) {
-    //     std::cout << "(" << player1->getPiecePosition(i).first << ", " << player1->getPiecePosition(i).second << ")" << std::endl;
-    // }
-    // std::cout << "Player 2 says that the pieces have positions:" << std::endl;
-    // for(int i = 0; i < 5; i++) {
-    //     std::cout << "(" << player2->getPiecePosition(i).first << ", " << player2->getPiecePosition(i).second << ")" << std::endl;
-    // }
+    std::cout << "Player 1 says that the pieces have positions:" << std::endl;
+    for(int i = 0; i < 5; i++) {
+        std::cout << "(" << player1->getPiecePosition(i).first << ", " << player1->getPiecePosition(i).second << ")" << std::endl;
+    }
+    std::cout << "Player 2 says that the pieces have positions:" << std::endl;
+    for(int i = 0; i < 5; i++) {
+        std::cout << "(" << player2->getPiecePosition(i).first << ", " << player2->getPiecePosition(i).second << ")" << std::endl;
+    }
 
     // See if the game is over
     if(checkGameOver()) {
+        if(turn) {
+            std::cout << player1->getName() << " won!" << std::endl;
+        }
+        else {
+            std::cout << player2->getName() << " won!" << std::endl;
+        }
         return turn; // You can only win on your own turn, so we know who won if there's a winning position
+    }
+    else if(turn_number >= 20) {
+        return true; // The game has lasted too long, so we're just calling a winner to end it, preventing an infinite game. Inelegant, but necessary.
     }
     else {
         /* If the game isn't over, then we continue with the other player's turn.
-        I agree that it's insane to make this recursive, but why not?
+        I agree that it's insane to make this recursive, but why not? I think this
+        is a clever little piece of code.
         */
-        return playRound(!turn);
+        return !playRound(!turn, turn_number+1);
     }
 }
 
