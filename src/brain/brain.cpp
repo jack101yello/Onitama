@@ -23,7 +23,6 @@ Brain::Brain(std::string t_name) {
     }
 
     // Populate the transition matrices
-    srand(time(NULL));
     for(int i = 0; i < input_size; i++) {
         for(int j = 0; j < internal_layer_size; j++) {
             transition_matrix1[i][j] = (float) rand()/RAND_MAX;
@@ -58,7 +57,6 @@ Brain::Brain(std::string t_name, const Brain &parent) {
         transition_matrix2[i] = new float[output_size];
     }
 
-    srand(time(NULL));
     // Populate the transition matrices
     for(int i = 0; i < input_size; i++) {
         for(int j = 0; j < internal_layer_size; j++) {
@@ -92,7 +90,7 @@ Returns the best legal move in the format:
 */
 std::vector<int> Brain::getMove() {
     // Wait for time while "thinking"
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::this_thread::sleep_for(std::chrono::microseconds(500));
 
     // for(int i = 0; i < 5; i++) {
     //     std::cout << mypiecepositions.at(i).first << "," << mypiecepositions.at(i).second << "\t";
@@ -190,7 +188,7 @@ std::vector<int> Brain::getMove() {
     // }
     // std::cout << std::endl;
 
-    // return (std::vector<int>) {0, mypiecepositions.at(0).first, mypiecepositions.at(0).second+1, -1}; // Suicide strat
+    // return (std::vector<int>) {0, mypiecepositions.at(0).first, mypiecepositions.at(0).second+1, -1};
 
     return output;
 }
