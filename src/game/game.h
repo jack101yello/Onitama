@@ -22,8 +22,8 @@ class Game {
     // Constructors and Destructor
     Game(Brain *t_player1, Brain *t_player2);
     ~Game() {
-        player1->reset();
-        player2->reset();
+        player1->reset_cards();
+        player2->reset_cards();
     }
 
     // Methods

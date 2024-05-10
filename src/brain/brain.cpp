@@ -4,6 +4,7 @@
 
 // This is the default constructor, for the first generation
 Brain::Brain(std::string t_name) {
+    score = 0;
     name = t_name;
     cardstates = new bool[80];
     for(int i = 0; i < 80; i++) {
@@ -39,6 +40,7 @@ Brain::Brain(std::string t_name) {
 
 // This is for asexual reproduction of new brains from parents
 Brain::Brain(std::string t_name, const Brain &parent) {
+    score = 0;
     name = t_name;
     cardstates = new bool[80];
     for(int i = 0; i < 80; i++) {
@@ -311,7 +313,7 @@ float Brain::TransitionMatrixElement(int index, int x, int y) const {
     }
 }
 
-void Brain::reset() {
+void Brain::reset_cards() {
     for(int i = 0; i < 80; i++) {
         cardstates[i] = false;
     }

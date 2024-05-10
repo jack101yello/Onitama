@@ -18,6 +18,7 @@ class Brain {
     static const int output_size = 55;
     const float mutation_factor = 0.01;
     std::string name;
+    int score;
 
     // Methods
     int isLegalMove(int piecenumber, std::pair<int,int> move);
@@ -51,5 +52,8 @@ class Brain {
     void show();
     float TransitionMatrixElement(int index, int x, int y) const;
     std::string getName() const { return name; }
-    void reset();
+    void reset_cards();
+    void reset_score() { score = 0; }
+    void increment_score() { score++; }
+    int getScore() const { return score; }
 };
